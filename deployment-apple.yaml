@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-deployment-apple
+  labels:
+    app: echo-apple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: echo-apple
+  template:
+    metadata:
+      labels:
+        app: echo-apple
+    spec:
+      containers:
+      - name: echo-apple
+        image: k8s.gcr.io/echoserver:1.4
+        ports:
+          - containerPort: 8080
+        env:
+          # Define the environment variable
+          - name: PLAYER_INITIAL_LIVES # Notice that the case is different here
+                                       # from the key name in the ConfigMap.
+            valueFrom:
+              configMapKeyRef:
+                name: echo-configmap-apple # The ConfigMap this value comes from.
+                key: player_initial_lives  # The key to fetch.
+          - name: UI_PROPERTIES_FILE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: echo-configmap-apple
+                key: ui_properties_file_name
+        volumeMounts:
+          - name: config
+            mountPath: "/config"
+            readOnly: true
+      volumes:
+        # You set volumes at the Pod level, then mount them into containers inside that Pod
+        - name: config
+          configMap:
+            # Provide the name of the ConfigMap you want to mount.
+            name: echo-configmap-apple 
+            # An array of keys from the ConfigMap to create as files
+            items:
+            - key: "game.properties"
+              path: "game.properties"
+            - key: "user-interface.properties"
+              path: "user-interface.properties"

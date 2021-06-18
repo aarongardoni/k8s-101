@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-deployment-banana
+  labels:
+    app: echo-banana
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: echo-banana
+  template:
+    metadata:
+      labels:
+        app: echo-banana
+    spec:
+      containers:
+      - name: echo-banana
+        image: k8s.gcr.io/echoserver:1.4
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+          - name: secrets
+            mountPath: /secrets
+            readOnly: true
+      volumes:
+        - name: secrets
+          secret:
+            secretName: echo-secret-banana
+
